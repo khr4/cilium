@@ -206,7 +206,8 @@ handle_ipv6(struct __ctx_buff *ctx, __u32 secctx __maybe_unused,
 
 #ifdef ENABLE_NODEPORT
 	if (!from_host) {
-		if (!ctx_skip_nodeport(ctx)) {
+		/* A flooded foreign unicast must not create a service connection. */
+		if (!ctx_skip_nodeport(ctx) && ctx->pkt_type != PACKET_OTHERHOST) {
 			bool is_dsr = false;
 
 			ret = nodeport_lb6(ctx, ip6, secctx, punt_to_stack, ext_err, &is_dsr);
@@ -659,7 +660,8 @@ handle_ipv4(struct __ctx_buff *ctx, __u32 secctx __maybe_unused,
 
 #ifdef ENABLE_NODEPORT
 	if (!from_host) {
-		if (!ctx_skip_nodeport(ctx)) {
+		/* A flooded foreign unicast must not create a service connection. */
+		if (!ctx_skip_nodeport(ctx) && ctx->pkt_type != PACKET_OTHERHOST) {
 			bool is_dsr = false;
 
 			int ret = nodeport_lb4(ctx, ip4, secctx, punt_to_stack,

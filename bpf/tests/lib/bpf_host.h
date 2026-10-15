@@ -23,10 +23,21 @@ struct {
 };
 
 static __always_inline int
-netdev_receive_packet(struct __ctx_buff *ctx)
+netdev_receive_packet_type(struct __ctx_buff *ctx, __u32 type)
 {
+	if (ctx_change_type(ctx, type))
+		return TEST_ERROR;
 	tail_call_static(ctx, entry_call_map, FROM_NETDEV);
 	return TEST_ERROR;
+}
+
+static __always_inline int
+netdev_receive_packet(struct __ctx_buff *ctx)
+{
+	/* Synthetic Ethernet frames need an explicit receive classification:
+	 * the test device does not have the fixture's destination MAC.
+	 */
+	return netdev_receive_packet_type(ctx, PACKET_HOST);
 }
 
 static __always_inline int
